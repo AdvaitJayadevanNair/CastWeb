@@ -1,4 +1,5 @@
 import { useState, Suspense, lazy } from 'react';
+import QRCode from "qrcode.react";
 
 export default function Sender() {
     const [screens, setScreens] = useState([]);
@@ -72,10 +73,11 @@ export default function Sender() {
                     <div key={index}>
                         <b>{index}.</b>
                         <p>Status: {screen.connection.connectionState}</p>
-                        {!screen.hasBeenAnswered && <p>Offer: {JSON.stringify(screen.offer)}</p>}
                         <p>Has Been Answered: {screen.hasBeenAnswered ? 'Yes' : 'No'}</p>
                         {!screen.hasBeenAnswered && (
                             <>
+                                <p>Offer: {JSON.stringify(screen.offer)}</p>
+                                <QRCode value={JSON.stringify(screen.offer)} />
                                 <input
                                     value={screen.answer}
                                     onChange={(e) => {
