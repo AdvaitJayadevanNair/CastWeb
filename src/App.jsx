@@ -1,43 +1,36 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, Suspense, lazy } from 'react';
+import * as Chakra from '@chakra-ui/react';
+import { TriangleUpIcon, TriangleDownIcon } from '@chakra-ui/icons';
+import Loader from './lib/Loader.jsx';
 
-function App() {
-    const [count, setCount] = useState(0);
-    const videoElem = useRef(null);
+export default function App() {
+    const [isSender, setIsSender] = useState(null);
+    const { toggleColorMode } = Chakra.useColorMode();
+    const boxBackground = Chakra.useColorModeValue('gray.100', 'gray.700');
 
-    const displayMediaOptions = {
-        video: {
-            cursor: "always"
-        },
-        audio: false
-    };
+    const Home = lazy(() => import('./screens/Home.jsx'));
+    const Sender = lazy(() => import('./screens/Sender.jsx'));
+    const Receiver = lazy(() => import('./screens/Receiver.jsx'));
 
-    async function startCapture() {
-        try {
-            videoElem.srcObject = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-            const videoTrack = videoElem.srcObject.getVideoTracks()[0];
-            console.info("Track settings:");
-            console.info(JSON.stringify(videoTrack.getSettings(), null, 2));
-            console.info("Track constraints:");
-            console.info(JSON.stringify(videoTrack.getConstraints(), null, 2));
-        } catch (err) {
-            console.error("Error: " + err);
-        }
+    if (isSender) {
+        return (
+            <Suspense fallback={<Loader />}>
+                <Sender />
+            </Suspense>
+        );
     }
 
-    function stopCapture(evt) {
-        let tracks = videoElem.srcObject.getTracks();
-
-        tracks.forEach(track => track.stop());
-        videoElem.srcObject = null;
+    if (isSender === false) {
+        return (
+            <Suspense fallback={<Loader />}>
+                <Receiver />
+            </Suspense>
+        );
     }
 
     return (
-        <div className="App">
-            <button onClick={startCapture}>Start</button>
-            <button onClick={stopCapture}>Stop</button>            
-            <video ref={videoElem} />
-        </div>
-    )
+        <Suspense fallback={<Loader />}>
+            <Home setIsSender={setIsSender} />
+        </Suspense>
+    );
 }
-
-export default App
