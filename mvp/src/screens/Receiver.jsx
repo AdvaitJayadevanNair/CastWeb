@@ -41,7 +41,8 @@ export default function Receiver({ db }) {
         const docSnap = await getDoc(doc(db, 'offers', 'alpha'));
 
         if (docSnap.exists()) {
-            setOffer(docSnap.data().offer);
+            let offer = docSnap.data().offer;
+            setOffer(offer);
             newConnection();
             await deleteDoc(doc(db, 'offers', 'alpha'));
         } else {
