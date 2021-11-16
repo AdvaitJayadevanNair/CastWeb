@@ -1,5 +1,6 @@
 import { useState, Suspense, lazy } from 'react';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { ICE_config } from '../ICE_config.js';
 
 export default function Sender({ db }) {
     const [screens, setScreens] = useState([]);
@@ -13,7 +14,7 @@ export default function Sender({ db }) {
             setDisplayMediaStream(temp);
             return;
         }
-        const localConnection = new RTCPeerConnection();
+        const localConnection = new RTCPeerConnection(ICE_config);
         let temp = [...sending];
         displayMediaStream.getTracks().forEach((track) => {
             temp.push(localConnection.addTrack(track, displayMediaStream));

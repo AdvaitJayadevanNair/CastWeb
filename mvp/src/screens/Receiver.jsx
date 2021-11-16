@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import Video from '../lib/Video.jsx';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { ICE_config } from '../ICE_config.js';
 
 export default function Receiver({ db }) {
     const [offer, setOffer] = useState(null);
@@ -12,7 +13,7 @@ export default function Receiver({ db }) {
         let decodedOffer = JSON.parse(offer);
         if (!decodedOffer) return;
 
-        const remoteConnection = new RTCPeerConnection();
+        const remoteConnection = new RTCPeerConnection(ICE_config);
 
         remoteConnection.onicecandidate = (e) => {
             setAnswer(remoteConnection.localDescription);
