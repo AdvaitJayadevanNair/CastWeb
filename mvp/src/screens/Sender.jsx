@@ -1,7 +1,7 @@
 import { useState, Suspense, lazy } from 'react';
-import QRCode from "qrcode.react";
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 
-export default function Sender() {
+export default function Sender({ db }) {
     const [screens, setScreens] = useState([]);
     const [offer, setOffer] = useState(null);
     const [displayMediaStream, setDisplayMediaStream] = useState(null);
@@ -25,7 +25,7 @@ export default function Sender() {
                 ...screens,
                 {
                     connection: localConnection,
-                    status: 'need answer',
+                    status: 'new',
                     offer: localConnection.localDescription,
                     hasBeenAnswered: false,
                     answer: '',
@@ -62,6 +62,28 @@ export default function Sender() {
         });
     }
 
+    async function saveOffertoDB(offer) {
+        await setDoc(doc(db, 'offers', 'alpha'), {
+            offer,
+        });
+        alert('Offer saved!');
+    }
+
+    async function useAnswerfromDB(index) {
+        const docSnap = await getDoc(doc(db, 'answers', 'alpha'));
+         
+
+        if (docSnap.exists()) {
+            let newScreens = [...screens];
+            newScreens[index].answer = docSnap.data().answer;
+            setScreens(newScreens);
+            answer(index);
+            await deleteDoc(doc(db, 'answers', 'alpha'));
+        } else {
+            alert("Can't get Answer");
+        }
+    }
+
     return (
         <div>
             <h1>Cast</h1>
@@ -77,7 +99,8 @@ export default function Sender() {
                         {!screen.hasBeenAnswered && (
                             <>
                                 <p>Offer: {JSON.stringify(screen.offer)}</p>
-                                <QRCode value={JSON.stringify(screen.offer)} />
+                                <button onClick={() => saveOffertoDB(JSON.stringify(screen.offer))}>Save Offer to DB</button>
+                                <button onClick={() => useAnswerfromDB(index)}>Use Answer from DB</button>
                                 <input
                                     value={screen.answer}
                                     onChange={(e) => {

@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import Video from '../lib/Video.jsx';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 
-export default function Receiver() {
+export default function Receiver({ db }) {
     const [offer, setOffer] = useState(null);
     const [answer, setAnswer] = useState(null);
     const [stream, setStream] = useState(null);
@@ -34,12 +35,32 @@ export default function Receiver() {
             .then((a) => setAnswer(remoteConnection.localDescription));
         //send the anser to the client
     }
-    
+
+    async function useOfferfromDB() {
+        const docSnap = await getDoc(doc(db, 'offers', 'alpha'));
+
+        if (docSnap.exists()) {
+            setOffer(docSnap.data().offer);
+            newConnection();
+            await deleteDoc(doc(db, 'offers', 'alpha'));
+        } else {
+            alert("Can't get Offer");
+        }
+    }
+
+    async function saveAnswertoDB(answer) {
+        await setDoc(doc(db, 'answers', 'alpha'), {
+            answer,
+        });
+        alert('Answer saved!');
+    }
+
     if (answer) {
         return (
             <div className="Receiver">
                 <h1>Answer</h1>
                 <p>{JSON.stringify(answer)}</p>
+                <button onClick={() => saveAnswertoDB(JSON.stringify(answer))}>Save Answer to DB</button>
                 <button onClick={() => setAnswer(null)}>Show screen</button>
             </div>
         );
@@ -58,6 +79,7 @@ export default function Receiver() {
                     setOffer(e.target.value);
                 }}
             />
+            <button onClick={useOfferfromDB}>Connect using DB offer</button>
             <button onClick={newConnection}>Connect</button>
         </div>
     );
